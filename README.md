@@ -79,9 +79,9 @@ This project implements various bioinformatics algorithms including synthetic DN
 
 ---
 
-## 📄 Documentation
+## 📘 Documentation
 
-📘 [Project Documentation (PDF)]([https://github.com/matinapap/Bioinformatics/blob/main/bioinformatics_doc.pdf)]
+[Project Documentation (PDF)](https://github.com/matinapap/Bioinformatics/blob/main/bioinformatics_doc.pdf)
 
 ---
 
