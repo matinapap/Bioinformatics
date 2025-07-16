@@ -81,7 +81,7 @@ This project implements various bioinformatics algorithms including synthetic DN
 
 ## 📄 Documentation
 
-📘 [Project Documentation (PDF)]([[https://github.com/matinapap/Learning-Python-Android-App/blob/main/%CE%95%CE%BA%CF%80%CE%B1%CE%B9%CE%B4%CE%B5%CF%85%CF%84%CE%B9%CE%BA%CF%8C%20%CE%9B%CE%BF%CE%B3%CE%B9%CF%83%CE%BC%CE%B9%CE%BA%CF%8C_%CE%91%CE%BD%CE%B1%CF%86%CE%BF%CF%81%CE%AC.pdf](https://github.com/matinapap/Bioinformatics/blob/main/bioinformatics_doc.pdf)](https://github.com/matinapap/Bioinformatics/blob/main/bioinformatics_doc.pdf))
+📘 [Project Documentation (PDF)]([https://github.com/matinapap/Bioinformatics/blob/main/bioinformatics_doc.pdf)]
 
 ---
 
@@ -99,9 +99,9 @@ This project implements various bioinformatics algorithms including synthetic DN
     <td align="center">
       <a href="https://github.com/Georgechrp">
         <img src="https://github.com/Georgechrp.png" width="100px;" alt="George Christopoulos"/><br />
-        <sub><b>Dimitrios Fotiadis</b></sub>
+        <sub><b>George Christopoulos</b></sub>
       </a>
-      <p>P21183</p>
+      <p>P20206</p>
     </td>
   </tr>
 </table>
