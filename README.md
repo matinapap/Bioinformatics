@@ -1,117 +1,135 @@
-# Bioinformatics Project – Sequence Alignment and HMM Profile Construction
+<img src="docs/overview.svg" alt="DNA sequence analysis: alignment, guide tree, and profile HMM" width="100%">
 
-## 📌 Description
+# DNA Sequence Alignment & Profile HMM
 
-This project implements various bioinformatics algorithms including synthetic DNA sequence generation, pairwise and multiple sequence alignment, phylogenetic tree construction using the Neighbor-Joining algorithm, and the construction of a Profile Hidden Markov Model (HMM). It was developed as part of a university course assignment in Spring 2023-2024.
+[![Tests](https://img.shields.io/github/actions/workflow/status/matinapap/Bioinformatics/tests.yml?branch=main&label=tests&logo=github)](https://github.com/matinapap/Bioinformatics/actions/workflows/tests.yml)
+![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)
 
-## 🧬 Project Structure
+**A reproducible bioinformatics project that moves from synthetic DNA sequences to a multiple alignment and a profile hidden Markov model.**
 
-### 1. **Synthetic DNA Sequence Generation**
+Built for a 2023–24 university bioinformatics assignment by [Matina Papadakou](https://github.com/matinapap) and [George Christopoulos](https://github.com/Georgechrp). This repository includes the original coursework artifacts and a cleaned, dependency-free demonstration that can be run in one command.
 
-- Uses the `random` and `sys` libraries.
-- Random DNA strings are created using the nucleotides A, C, G, and T.
-- Patterns are randomly modified and inserted into the string using substitution or insertion.
-- A total of 50 sequences are generated and split into two datasets:
-  - `datasetA.txt` (15 sequences)
-  - `datasetB.txt` (35 sequences)
-  - Full dataset saved in `FullDataset.txt`
+### Highlights
 
-### 2. **Global Alignment**
+- **Core algorithms written from scratch:** Needleman–Wunsch global alignment, UPGMA clustering, progressive multiple alignment, and profile-HMM parameter estimation. No bioinformatics libraries are used.
+- **Reproducible by design:** seeded data generation, deterministic outputs, and a one-command demo.
+- **Engineered like a small tool:** installable package, `bioseq` command-line interface with input validation, unit and end-to-end tests, and CI on Python 3.9–3.13.
+- **Standard output formats:** a Newick guide tree and a JSON profile.
 
-- Implements a global alignment algorithm (`global_alignment(A, B, alpha=2)`) that uses dynamic programming.
-- Scores:
-  - +1 for match
-  - -α/2 for mismatch
-  - Gap penalties included
-- Returns aligned sequences and alignment score.
+```mermaid
+flowchart LR
+    A[Seeded DNA generation] --> B[Pairwise global alignment]
+    B --> C[Average-linkage guide tree]
+    C --> D[Progressive multiple alignment]
+    D --> E[Profile HMM estimation]
+```
 
-### 3. **Pairwise Distance Matrix**
+## Quick start
 
-- Calculates similarity scores between all sequence pairs in a dataset.
-- Builds an n×n matrix storing alignment scores for each sequence pair.
-- Symmetric matrix.
+From the repository root, run with **Python 3.9 or newer**. The portfolio demo uses only the Python standard library.
 
-### 4. **Neighbor Joining Algorithm**
+```bash
+python3 -m bioseq demo
+```
 
-- Constructs a phylogenetic tree based on the distance matrix.
-- Iteratively merges the most similar clusters until all sequences are grouped.
+The command creates `results/` with 50 generated sequences, a 15-sequence training subset, a 35-sequence holdout subset, a multiple alignment, a Newick guide tree, and a JSON profile. The default seed is `2024`; results are reproducible. A typical run reports:
 
-### 5. **Progressive Alignment**
+```text
+Aligned 15 sequences across 44 columns
+Profile contains 37 match states
+Results: .../results
+```
 
-- Builds a multiple sequence alignment using a guide tree from the Neighbor-Joining algorithm.
-- Aligns the most similar sequences first, then adds others progressively.
-- Results saved in `multiple_alignment_result.txt`.
+To analyze your own data, place **one unaligned A/C/G/T sequence per line** in a text file:
 
-### 6. **Profile HMM Construction**
+```bash
+python3 -m bioseq analyze path/to/sequences.txt --output results/custom
+```
 
-#### Conserved Region Detection
+Use `--threshold 0.8` to change the minimum non-gap occupancy for match columns. Use `python3 -m bioseq --help` for all options.
 
-- Columns are categorized into:
-  - `match`: ≥70% consensus
-  - `delete`: ≥70% consensus with gaps
-  - `insert`: other cases
+**Optional:** install the package to get a `bioseq` command:
 
-#### Emission Probabilities
+```bash
+python3 -m pip install .
+bioseq demo
+```
 
-- For each conserved (match) column, calculates the probability distribution of nucleotides (A, C, G, T).
-- Stores in an emission probability table.
+## Sample output
 
-#### Transition Probabilities
+The first rows of `results/alignment.txt` from the default demo show the four shared motifs lining up despite mutations:
 
-- Builds a transition matrix that describes the probabilities of moving between:
-  - Match → Match, Insert, Delete
-  - Insert → Match, Insert, Delete
-  - Delete → Match, Insert, Delete
+```text
+--GAGAATG-GTGCGTTTGTCAGGCCT-TATACTTA-CCGT-AT
+--T-GAATTG-ATCGCTTAT--GCACTC-ATAATAATTCGTACG
+--TA-TGTGACGGC-CTTAT-TGG--ACAATTGTTA-TCGTAAC
+-AAGAAATG-CGGTGCTTAT-TGGACGCTA-T-TGA-TCGT-AC
+-CTTAAGTGACGG--GTTATCTGGAGTCAA---ATATTCGTAA-
+```
 
-### 7. **Viterbi Algorithm Preparation**
+`profile.json` stores per-state probabilities. For example, the first match state:
 
-- Calculates emission probabilities for Match, Insert, and Delete states.
-- These are used to determine the most probable path through the HMM for a given observed sequence.
+```json
+"emissions":   { "M1": { "A": 0.100, "C": 0.033, "G": 0.167, "T": 0.700 } },
+"transitions": { "M1": { "M2": 0.846, "D2": 0.154 } }
+```
 
----
+## What the pipeline does
 
-## 🗂️ Output Files
+| Stage | Method | Output |
+| --- | --- | --- |
+| Sequence generation | Four shared motifs with seeded substitutions, deletions, and variable flanking bases | `all_sequences.txt`, `dataset_a.txt`, `dataset_b.txt` |
+| Pairwise alignment | Needleman–Wunsch dynamic programming; match `+1`, mismatch `−1`, gap `−2` | Internal pairwise distances |
+| Guide tree | UPGMA average linkage using the fraction of differing aligned positions | `guide_tree.nwk` |
+| Multiple alignment | Progressive consensus-guided profile alignment with gap propagation | `alignment.txt` |
+| Profile HMM | Match columns selected by occupancy; observed state transitions; nucleotide emissions with a `0.5` pseudocount | `profile.json` |
 
-- `FullDataset.txt`: All 50 generated sequences.
-- `datasetA.txt` and `datasetB.txt`: Split sequence sets.
-- `multiple_alignment_result.txt`: Multiple sequence alignment result.
-- Emission and transition probability tables printed or optionally saved to files.
+The profile uses match (`M`), insertion (`I`), and deletion (`D`) states. Deletion states are silent; insertion states emit nucleotides. `profile.json` contains normalized emission and observed transition probabilities. The 35-sequence holdout is generated for future evaluation; this demo does not score or decode it.
 
----
+### Scope and limitations
 
-## 📘 Documentation
+This is a compact educational implementation. UPGMA groups sequences by average alignment distance; the progressive alignment uses each profile’s consensus, so it may differ from a full profile-to-profile dynamic program. The profile is estimated from the training alignment. **Viterbi decoding, model validation on the holdout set, and phylogenetic inference are outside this implementation.** The guide tree is an alignment aid and should not be interpreted as an evolutionary tree.
 
-[Project Documentation (PDF)](https://github.com/matinapap/Bioinformatics/blob/main/bioinformatics_doc.pdf)
+## Repository map
 
----
+```text
+bioseq/                 Reproducible Python implementation and CLI
+tests/                  Unit and end-to-end checks
+docs/                   README banner
+source2024/             Original coursework scripts (historical reference)
+auxiliary2024/          Original generated datasets and alignment
+bioinformatics_doc.pdf  Original assignment report
+pyproject.toml          Package metadata and `bioseq` command
+```
 
-## 👥 Contributors
+The original scripts are retained to show the project’s development. They use NumPy and write files relative to the working directory; use `bioseq` for the supported, reproducible workflow. See the [original assignment report (PDF)](bioinformatics_doc.pdf).
+
+## Verification
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+The tests check terminal gaps in global alignment, preservation of bases during progressive alignment, profile probability normalization, input validation, and output creation by the command-line demo. GitHub Actions runs them on every push.
+
+## Contributors
 
 <table>
   <tr>
     <td align="center">
       <a href="https://github.com/matinapap">
-        <img src="https://github.com/matinapap.png" width="100px;" alt="Matina Papadakou"/><br />
-        <sub><b>Matina Papadakou</b></sub>
-      </a>
-      <p>P21127</p>
+        <img src="https://github.com/matinapap.png?size=100" width="100" alt="Matina Papadakou"><br>
+        <b>Matina Papadakou</b>
+      </a><br>
+      <sub>@matinapap</sub>
     </td>
     <td align="center">
       <a href="https://github.com/Georgechrp">
-        <img src="https://github.com/Georgechrp.png" width="100px;" alt="George Christopoulos"/><br />
-        <sub><b>George Christopoulos</b></sub>
-      </a>
-      <p>P20206</p>
+        <img src="https://github.com/Georgechrp.png?size=100" width="100" alt="George Christopoulos"><br>
+        <b>George Christopoulos</b>
+      </a><br>
+      <sub>@Georgechrp</sub>
     </td>
   </tr>
 </table>
-
-## 🛠️ Requirements
-
-- Python 3.x
-- NumPy
-
-Install dependencies (if needed):
-
-```bash
-pip install numpy
